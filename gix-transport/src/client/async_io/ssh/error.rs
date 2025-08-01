@@ -7,6 +7,8 @@ pub enum Error {
     #[error(transparent)]
     Ssh(#[from] russh::Error),
     #[error(transparent)]
+    SshConfig(#[from] russh_config::Error),
+    #[error(transparent)]
     Keys(#[from] russh::keys::Error),
     #[error(transparent)]
     Agent(#[from] russh::AgentAuthError),

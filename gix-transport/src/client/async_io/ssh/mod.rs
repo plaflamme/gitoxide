@@ -62,7 +62,17 @@ impl Transport for NativeSsh {
         extra_parameters: &'a [(&'a str, Option<&'a str>)],
     ) -> Result<SetServiceResponse<'_>, crate::client::Error> {
         let host = self.url.host().expect("url has host");
-        let port = self.url.port_or_default().expect("ssh has a default port");
+
+        let config = russh_config::parse_home(host).unwrap_or_else(|_| {
+            let mut config = russh_config::Config::default(host);
+            if let Some(username) = self.url.user() {
+                config.user = username.to_string();
+            }
+            if let Some(port) = self.url.port {
+                config.port = port;
+            }
+            config
+        });
 
         let auth_mode = match self.identity.as_ref() {
             Some(crate::client::Account {
@@ -82,7 +92,7 @@ impl Transport for NativeSsh {
             },
         };
 
-        let mut client = client::Client::connect(host, port, auth_mode).await?;
+        let mut client = client::Client::connect(config, auth_mode).await?;
 
         let session = client
             .open_session(

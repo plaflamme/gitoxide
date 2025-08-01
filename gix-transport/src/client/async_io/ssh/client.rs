@@ -12,16 +12,28 @@ pub enum AuthMode {
 
 #[derive(Clone)]
 pub struct Client {
+    // config: russh_config::Config,
     handle: Arc<Handle<ClientHandler>>,
 }
 
+fn foo(a: &str) -> &'static str {
+    if a.starts_with("bar") {
+        return "foobar";
+    } else if a.starts_with("baz") {
+        return "foobaz";
+    }
+    "baz"
+}
+
 impl Client {
-    pub(super) async fn connect(host: &str, port: u16, auth: AuthMode) -> Result<Self, super::Error> {
-        let mut handle = russh::client::connect(Arc::new(Config::default()), (host, port), ClientHandler).await?;
+    pub(super) async fn connect(config: russh_config::Config, auth: AuthMode) -> Result<Self, super::Error> {
+        let stream: russh_config::Stream = config.stream().await?;
+        let mut handle = russh::client::connect_stream(Arc::new(Config::default()), stream, ClientHandler).await?;
 
         Self::authenticate(&mut handle, auth).await?;
 
         Ok(Client {
+            // config,
             handle: Arc::new(handle),
         })
     }

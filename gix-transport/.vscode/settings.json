@@ -1,0 +1,9 @@
+{
+    "rust-analyzer.cargo.features": [
+        // "async-client",
+        "russh",
+        "async-std"
+        // "http-client-reqwest"
+    ],
+    "rust-analyzer.cargo.noDefaultFeatures": true
+}
